@@ -1,0 +1,53 @@
+#!/bin/bash
+
+THREADS=1
+REMOVE=
+
+usage()
+{
+echo "
+Description: $0 downloads sra files from NCBI and extracts fastq files using parallel-fastq-dump, which is a wrapper around NCBI's fastq-dump
+
+Usage: [$0 <-s SRA run accession> [-t threads] [-r] | [-h]]
+-s | --run-accession    NCBI's SRA run accession
+-t | --threads          Number of threads; default = 1
+-r | --remove           Remove downloaded SRA file after extracting the fastq files; default to keep
+-h | --help             Display this help message and exit
+"
+}
+
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -s | --run-accession )           shift
+                                RUN_ACC=$1
+                                ;;
+        -t | --threads )                 shift
+                                THREADS=$1
+                                ;;
+        -r | --remove )         REMOVE=1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+if [ "$RUN_ACC" == "" ]; then
+    usage
+    exit 1
+fi
+
+
+
+PRE3=${RUN_ACC:0:3}
+PRE6=${RUN_ACC:0:6}
+
+wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra/${PRE3}/${PRE6}/${RUN_ACC}/${RUN_ACC}.sra
+parallel-fastq-dump -s ${RUN_ACC}.sra -t ${THREADS} --skip-technical  --readids --read-filter pass --dumpbase --split-files --clip 
+if [ "$REMOVE" -eq 1 ]; then
+rm ${RUN_ACC}.sra
+fi
