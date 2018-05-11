@@ -48,6 +48,6 @@ PRE6=${RUN_ACC:0:6}
 
 wget ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra/${PRE3}/${PRE6}/${RUN_ACC}/${RUN_ACC}.sra
 parallel-fastq-dump -s ${RUN_ACC}.sra -t ${THREADS} --skip-technical  --readids --read-filter pass --dumpbase --split-files --clip 
-if [ "$REMOVE" -eq 1 ]; then
+if [ "$REMOVE" == 1 ]; then
 rm ${RUN_ACC}.sra
 fi
